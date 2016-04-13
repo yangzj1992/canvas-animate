@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<style type="text/css" media="screen">
+    * {
+    padding: 0;
+    margin: 0;
+}
+html {
+    background: black;
+    height: 100%;
+}
+#canvas {
+    display: block;
+    margin: 20px auto;
+}
+#offCanvas {
+    display: none;
+}
+</style>
+<body>
+<canvas id="canvas"></canvas>
+<canvas id="offCanvas"></canvas>
+<script type="text/javascript">
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext("2d");
+var offCanvas = document.getElementById("offCanvas");
+var offContext = offCanvas.getContext("2d");
+var image = new Image();
+var isMouseDown = false;
+var scale;
+window.onload = function() {
+    canvas.width = 600;
+    canvas.height = 337.5;
+    image.src = "s1.jpg";
+    image.onload = function() {
+        scale = image.width / canvas.width;
+        offCanvas.width = image.width;
+        offCanvas.height = image.height;
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        offContext.drawImage(image, 0, 0);
+    }
+}
+
+function windowToCanvas(x, y) {
+    var box = canvas.getBoundingClientRect();
+    return {
+        x: x - box.left,
+        y: y - box.top
+    };
+}
+canvas.onmousedown = function(e) {
+    e.preventDefault();
+    isMouseDown = true;
+    point = windowToCanvas(e.clientX, e.clientY);
+    drawMagniferCanvas(true, point);
+}
+canvas.onmouseup = function(e) {
+    e.preventDefault();
+    isMouseDown = false;
+    drawMagniferCanvas(false);
+}
+canvas.onmouseout = function(e) {
+    e.preventDefault();
+    isMouseDown = false;
+    drawMagniferCanvas(false);
+}
+canvas.onmousemove = function(e) {
+    e.preventDefault();
+    if (isMouseDown == true) {
+        point = windowToCanvas(e.clientX, e.clientY);
+        drawMagniferCanvas(true, point);
+    }
+}
+
+function drawMagniferCanvas(isShowMagnifer, point) {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    if (isShowMagnifer == true) {
+        showMagnifer(point);
+    }
+}
+
+function showMagnifer(point) {
+    var r = 100;
+    var image_cx = point.x * scale;
+    var image_cy = point.y * scale;
+    var sx = image_cx - r;
+    var sy = image_cy - r;
+    var dx = point.x - r;
+    var dy = point.y - r;
+
+    context.save();
+    context.lineWidth = 10;
+    context.strokeStyle = "#069";
+    context.beginPath();
+    context.arc(point.x, point.y, r, 0, Math.PI * 2, false);
+    context.stroke();
+    context.clip();
+    context.drawImage(offCanvas, sx, sy, 2 * r, 2 * r, dx, dy, 2 * r, 2 * r);
+    context.restore();
+}
+</script>
+</body>
+</html>
